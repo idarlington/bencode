@@ -1,4 +1,5 @@
 package com.github.lavrov.bencode
+package codec
 
 import scodec.Err
 import scodec.bits.BitVector

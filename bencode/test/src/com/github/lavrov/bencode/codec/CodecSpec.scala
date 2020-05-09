@@ -1,11 +1,13 @@
-package com.github.lavrov.bencode
+package com.github.lavrov.bencode.codec
 
 import java.nio.charset.Charset
 
+import com.github.lavrov.bencode.Bencode
 import scodec.bits.BitVector
+
 import scala.language.experimental
 
-class BencodeCodecSpec extends munit.FunSuite {
+class CodecSpec extends munit.FunSuite {
 
   given Charset = Charset.forName("UTF-8")
 
