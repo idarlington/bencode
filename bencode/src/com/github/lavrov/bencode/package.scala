@@ -63,7 +63,7 @@ private[bencode] val instance: Codec[Bencode] = {
     (positiveNumber <~ constant(':'))
       .consume { number =>
         bytes(number.toInt).xmap[Bencode.BString](
-          bv => Bencode.BString(bv),
+          bv => new Bencode.BString(bv),
           bs => bs.value
         )
       }(
@@ -71,35 +71,35 @@ private[bencode] val instance: Codec[Bencode] = {
       )
 
   val integerCodec: Codec[Bencode.BInteger] = (constant('i') ~> number <~ constant('e')).xmap(
-    number => Bencode.BInteger(number),
+    number => new Bencode.BInteger(number),
     integer => integer.value
   )
 
   val listCodec: Codec[Bencode.BList] =
     (constant('l') ~> listSuccessful(valueCodec) <~ constant('e')).xmap(
-      elems => Bencode.BList(elems),
+      elems => new Bencode.BList(elems),
       list => list.values
     )
 
   val keyValueCodec: Codec[String ~ Bencode] = (stringCodec ~ valueCodec).xmap(
     { case (Bencode.BString(key), value) => (key.decodeAscii.getOrElse(???), value) },
-    { case (key, value) => (Bencode.BString(ByteVector.encodeAscii(key).getOrElse(???)), value) }
+    { case (key, value) => (new Bencode.BString(ByteVector.encodeAscii(key).getOrElse(???)), value) }
   )
 
   val dictionaryCodec: Codec[Bencode.BDictionary] =
     (constant('d') ~> listSuccessful(keyValueCodec) <~ constant('e'))
       .xmap(
-        elems => Bencode.BDictionary(elems.toMap),
+        elems => new Bencode.BDictionary(elems.toMap),
         dict => dict.values.toList
       )
-  
+
   def encode(value: Bencode): Attempt[BitVector] =
     value match
       case value: Bencode.BString => stringCodec.encode(value)
       case value: Bencode.BInteger => integerCodec.encode(value)
       case value: Bencode.BList => listCodec.encode(value)
       case value: Bencode.BDictionary => dictionaryCodec.encode(value)
-    
+
   def decode(bits: BitVector): Attempt[DecodeResult[Bencode]] =
     byte.decode(bits).flatMap { result =>
       result.value.toChar match

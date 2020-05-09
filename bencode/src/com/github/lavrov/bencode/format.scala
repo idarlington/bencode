@@ -48,7 +48,7 @@ package object format {
         case other => Left(BencodeFormatException(s"String is expected, $other found"))
       },
       ReaderT { value =>
-        Right(Bencode.BString.apply(value))
+        Right(Bencode.BString.fromString(value))
       }
     )
 
@@ -73,7 +73,7 @@ package object format {
             Left(BencodeFormatException("List is expected"))
         },
         ReaderT { (values: List[A]) =>
-          values.traverse(aReader.write.run).map(Bencode.BList)
+          values.traverse(aReader.write.run).map(Bencode.BList(_))
         }
       )
     }

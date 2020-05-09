@@ -21,13 +21,13 @@ class BencodeCodecSpec extends munit.FunSuite {
 
   test("decode byte string") {
     val result = decode(BitVector.encodeAscii("2:aa").getOrElse(???))
-    val expectation = Right(Bencode.BString("aa"))
+    val expectation = Right(Bencode.BString.fromString("aa"))
     assertEquals(result, expectation)
   }
 
   test("decode list") {
     val result = decode(BitVector.encodeAscii("l1:a2:bbe").getOrElse(???))
-    val expectation = Right(Bencode.BList(Bencode.BString("a") :: Bencode.BString("bb") :: Nil))
+    val expectation = Right(Bencode.BList(Bencode.BString.fromString("a") :: Bencode.BString.fromString("bb") :: Nil))
     assertEquals(result, expectation)
   }
 
@@ -38,11 +38,11 @@ class BencodeCodecSpec extends munit.FunSuite {
   }
 
   test("encode string value") {
-    assertEquals(encode(Bencode.BString("test")), BitVector.encodeString("4:test").getOrElse(???))
+    assertEquals(encode(Bencode.BString.fromString("test")), BitVector.encodeString("4:test").getOrElse(???))
   }
 
   test("encode list value") {
-    val result = encode(Bencode.BList(Bencode.BString("test") :: Bencode.BInteger(10) :: Nil))
+    val result = encode(Bencode.BList(Bencode.BString.fromString("test") :: Bencode.BInteger(10) :: Nil))
     val expectation =
       BitVector
         .encodeString("l4:testi10ee")

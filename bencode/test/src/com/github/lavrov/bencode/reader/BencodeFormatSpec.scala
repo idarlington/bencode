@@ -6,8 +6,8 @@ class BencodeFormatSpec extends munit.FunSuite {
 
   test("decode list") {
     val input = Bencode.BList(
-      Bencode.BString("a") ::
-        Bencode.BString("b") :: Nil
+      Bencode.BString.fromString("a") ::
+        Bencode.BString.fromString("b") :: Nil
     )
     val listStringReader: BencodeFormat[List[String]] = implicitly
 
