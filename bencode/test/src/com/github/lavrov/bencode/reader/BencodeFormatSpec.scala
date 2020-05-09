@@ -1,10 +1,8 @@
 package com.github.lavrov.bencode.format
 
-import verify._
-
 import com.github.lavrov.bencode.Bencode
 
-object BencodeFormatSpec extends BasicTestSuite {
+class BencodeFormatSpec extends munit.FunSuite {
 
   test("decode list") {
     val input = Bencode.BList(
@@ -13,7 +11,7 @@ object BencodeFormatSpec extends BasicTestSuite {
     )
     val listStringReader: BencodeFormat[List[String]] = implicitly
 
-    assert(listStringReader.read(input) == Right(List("a", "b")))
+    assertEquals(listStringReader.read(input), Right(List("a", "b")))
   }
 
 }

@@ -2,45 +2,43 @@ package com.github.lavrov.bencode
 
 import java.nio.charset.Charset
 
-import verify._
-
-import scodec.bits.{Bases, BitVector}
+import scodec.bits.BitVector
 import scala.language.experimental
 
-object BencodeCodecSpec extends BasicTestSuite {
+class BencodeCodecSpec extends munit.FunSuite {
 
-  implicit val charset = Charset.forName("UTF-8")
+  given Charset = Charset.forName("UTF-8")
 
   test("encode/decode positive integer") {
     val encoded = encode(Bencode.BInteger(56L))
-    assert(decode(encoded) == Right(Bencode.BInteger(56L)))
+    assertEquals(decode(encoded), Right(Bencode.BInteger(56L)))
   }
 
   test("encode/decode negative integer") {
     val encoded = encode(Bencode.BInteger(-567L))
-    assert(decode(encoded) == Right(Bencode.BInteger(-567L)))
+    assertEquals(decode(encoded), Right(Bencode.BInteger(-567L)))
   }
 
   test("decode byte string") {
     val result = decode(BitVector.encodeAscii("2:aa").getOrElse(???))
     val expectation = Right(Bencode.BString("aa"))
-    assert(result == expectation) 
+    assertEquals(result, expectation)
   }
 
   test("decode list") {
     val result = decode(BitVector.encodeAscii("l1:a2:bbe").getOrElse(???))
     val expectation = Right(Bencode.BList(Bencode.BString("a") :: Bencode.BString("bb") :: Nil))
-    assert(result == expectation)
+    assertEquals(result, expectation)
   }
 
   test("decode dictionary") {
     val result = decode(BitVector.encodeAscii("d1:ai6ee").getOrElse(???))
     val expectation = Right(Bencode.BDictionary(Map("a" -> Bencode.BInteger(6))))
-    assert(result == expectation)
+    assertEquals(result, expectation)
   }
 
   test("encode string value") {
-    assert(encode(Bencode.BString("test")) == BitVector.encodeString("4:test").getOrElse(???))
+    assertEquals(encode(Bencode.BString("test")), BitVector.encodeString("4:test").getOrElse(???))
   }
 
   test("encode list value") {
@@ -48,15 +46,14 @@ object BencodeCodecSpec extends BasicTestSuite {
     val expectation =
       BitVector
         .encodeString("l4:testi10ee")
-        .right
-        .get
-    assert(result == expectation)
+        .getOrElse(???)
+    assertEquals(result, expectation)
   }
 
   test("encode and decode long list (stack safety)") {
     val data = Bencode.BList(List.fill(500)(Bencode.BInteger(0L)))
     def encoded = encode(data)
-    assert(decode(encoded) == Right(data))
+    assertEquals(decode(encoded), Right(data))
   }
 
 }
