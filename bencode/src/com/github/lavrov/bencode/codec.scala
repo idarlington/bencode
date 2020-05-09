@@ -23,7 +23,7 @@ def encode(value: Bencode): BitVector = instance.encode(value).require
 
 case class BencodeCodecError(error: Err) extends Throwable(error.messageWithContext)
 
-private[bencode] val instance: Codec[Bencode] = {
+private[bencode] val instance: Codec[Bencode] =
 
   // reference to `instance` to use it recursively in its definition
   val valueCodec = lazily(instance)
@@ -112,7 +112,8 @@ private[bencode] val instance: Codec[Bencode] = {
     }
 
   Codec(encode, decode)
-}
+
+end instance
 
 
 /**
@@ -126,7 +127,7 @@ private[bencode] val instance: Codec[Bencode] = {
   * @param codec codec to encode/decode a single element of the sequence
   */
 private def listSuccessful[A](codec: Codec[A]): Codec[List[A]] =
-  new Codec[List[A]]:
+  new:
     def sizeBound: SizeBound = SizeBound.unknown
     def decode(bits: BitVector): Attempt[DecodeResult[List[A]]] =
     decodeCollectSuccessful[List, A](codec, None)(bits)
@@ -134,7 +135,7 @@ private def listSuccessful[A](codec: Codec[A]): Codec[List[A]] =
     Encoder.encodeSeq(codec)(value)
 
 private def decodeCollectSuccessful[F[_], A](dec: Decoder[A], limit: Option[Int])(buffer: BitVector)(
-  implicit factory: collection.Factory[A, F[A]]
+  using factory: collection.Factory[A, F[A]]
 ): Attempt[DecodeResult[F[A]]] =
 
   val builder = factory.newBuilder
