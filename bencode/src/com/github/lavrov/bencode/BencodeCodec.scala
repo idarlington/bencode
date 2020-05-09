@@ -76,12 +76,38 @@ object BencodeCodec {
           elems => Bencode.BDictionary(elems.toMap),
           dict => dict.values.toList
         )
+    
+    val choiceMatchFailed = Attempt.failure(Err.General("Did not match", List.empty))
 
     choice(
-//      stringCodec.upcast[Bencode],
-//      integerCodec.upcast[Bencode],
-//      listCodec.upcast[Bencode],
-//      dictionaryCodec.upcast[Bencode]
+      stringCodec.exmap[Bencode](
+        Attempt.successful,
+        {
+          case v: Bencode.BString => Attempt.successful(v)
+          case _ => choiceMatchFailed
+        }
+      ),
+      integerCodec.exmap[Bencode](
+        Attempt.successful,
+        {
+          case v: Bencode.BInteger => Attempt.successful(v)
+          case _ => choiceMatchFailed
+        }
+      ),
+      listCodec.exmap[Bencode](
+        Attempt.successful,
+        {
+          case v: Bencode.BList => Attempt.successful(v)
+          case _ => choiceMatchFailed
+        }
+      ),
+      dictionaryCodec.exmap[Bencode](
+        Attempt.successful,
+        {
+          case v: Bencode.BDictionary => Attempt.successful(v)
+          case _ => choiceMatchFailed
+        }
+      )
     )
   }
 
