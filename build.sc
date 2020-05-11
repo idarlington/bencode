@@ -3,8 +3,7 @@ import mill._, scalalib._, scalafmt.ScalafmtModule
 object bencode extends Module {
   def millSourcePath: os.Path = millOuterCtx.millSourcePath
   def ivyDeps = Agg(
-    ivy"org.scodec::scodec-core:1.11.4".withDottyCompat(scalaVersion()), 
-    ivy"org.typelevel::cats-core:${Versions.cats}".withDottyCompat(scalaVersion()),
+    ivy"org.scodec::scodec-core:${Versions.scodec}".withDottyCompat(scalaVersion())
   )
   object test extends TestModule
 }
@@ -26,12 +25,6 @@ trait Module extends SbtModule with ScalafmtModule {
 }
 
 object Versions {
-  val cats = "2.2.0-M1"
-  val `cats-effect` = "2.1.3"
-  val monocle = "2.0.0"
-  val logstage = "0.10.2"
-  val `scodec-bits` = "1.1.14"
-  val upickle = "1.0.0"
-  val http4s = "0.21.1"
+  val scodec = "1.11.4"
 }
 
