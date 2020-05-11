@@ -1,6 +1,7 @@
 import mill._, scalalib._, scalafmt.ScalafmtModule
 
 object bencode extends Module {
+  def millSourcePath: os.Path = millOuterCtx.millSourcePath
   def ivyDeps = Agg(
     ivy"org.scodec::scodec-core:1.11.4".withDottyCompat(scalaVersion()), 
     ivy"org.typelevel::cats-core:${Versions.cats}".withDottyCompat(scalaVersion()),

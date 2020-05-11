@@ -1,8 +1,5 @@
-lazy val root = project
-  .in(file("."))
-  .aggregate(bencode)
-
 lazy val bencode = project
+  .in(file("."))
   .settings(
     scalaVersion := "0.24.0-RC1",
     libraryDependencies ++= Seq(
