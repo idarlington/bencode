@@ -9,7 +9,7 @@ object bencode extends Module {
 }
 
 
-trait Module extends ScalaModule with ScalafmtModule {
+trait Module extends SbtModule with ScalafmtModule {
   def scalaVersion = "0.24.0-RC1"
 
   def scalacOptions = List(

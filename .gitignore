@@ -1,8 +1,10 @@
 out
+target
 logs
 .idea
 .idea_modules
 .metals
+project/metals.sbt
 .bloop
 node_modules
 package-lock.json
