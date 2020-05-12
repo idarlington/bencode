@@ -5,9 +5,10 @@ import com.github.lavrov.bencode.Bencode
 trait Reader[-I, +A]:
   def apply(i: I): Either[String, A]
 
-def readerOf[A](using reader: Reader[Bencode, A]) = reader
+extension on [I, A, B](reader: Reader[I, A]):
+  def map(f: A => B): Reader[I, B] = i => reader(i).map(f)
 
-def [I, A, B](reader: Reader[I, A]).map(f: A => B): Reader[I, B] = i => reader(i).map(f)
+def readerOf[A](using reader: Reader[Bencode, A]) = reader
 
 given Reader[Bencode, Long] = {
   case Bencode.BInteger(value) => Right(value)
