@@ -1,11 +1,31 @@
-import mill._, scalalib._, scalafmt.ScalafmtModule
+import mill._, scalalib._, publish._, scalafmt.ScalafmtModule
 
-object bencode extends Module {
+import $ivy.`com.lihaoyi::mill-contrib-bintray:$MILL_VERSION`
+import mill.contrib.bintray.BintrayPublishModule
+
+object bencode extends Module with BintrayPublishModule {
   def millSourcePath: os.Path = millOuterCtx.millSourcePath
   def ivyDeps = Agg(
     ivy"org.scodec::scodec-core:${Versions.scodec}".withDottyCompat(scalaVersion())
   )
+
   object test extends TestModule
+
+  def bintrayOwner = "lavrov"
+  def bintrayRepo = "maven"
+  
+  def pomSettings = PomSettings(
+    description = "Bencode codec",
+    organization = "com.github.styx-torrent",
+    url = "https://github.com/styx-torrent/bencode",
+    licenses = Seq(License.MIT),
+    versionControl = VersionControl.github("styx-torrent", "bencode"),
+    developers = Seq(
+      Developer("lavrov", "Vitaly Lavrov","https://github.com/lavrov")
+    )
+  )
+  def publishVersion = "0.1.0"
+
 }
 
 
