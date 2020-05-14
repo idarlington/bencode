@@ -7,7 +7,7 @@ import scodec.bits.BitVector
 
 import scala.language.experimental
 
-class CodecSpec extends munit.FunSuite {
+class CodecSpec extends munit.FunSuite:
 
   given Charset = Charset.forName("UTF-8")
 
@@ -57,5 +57,3 @@ class CodecSpec extends munit.FunSuite {
     def encoded = encode(data)
     assertEquals(decode(encoded), Right(data))
   }
-
-}
