@@ -7,48 +7,60 @@ trait Reader[-I, +A]:
 
 def readerOf[A](using reader: Reader[Bencode, A]): Reader[Bencode, A] = reader
 
-extension on [I, A, B](reader: Reader[I, A]):
-  def map(f: A => B): Reader[I, B] = i => reader(i).map(f)
-  def flatMap(f: A => Reader[I, B]): Reader[I, B] = i => reader(i).flatMap(a => f(a)(i))
+object Reader:
 
-extension on [I, R](reader: Reader[I, R]):
-  def attempt: Reader[I, Either[String, R]] = i => Right(reader(i))
+  extension on [I, A, B](reader: Reader[I, A]):
+    def map(f: A => B): Reader[I, B] = i => reader(i).map(f)
+    def flatMap(f: A => Reader[I, B]): Reader[I, B] = i => reader(i).flatMap(a => f(a)(i))
 
-def dictionary[A](reader: Reader[Bencode.BDictionary, A]): Reader[Bencode, A] = {
-  case d: Bencode.BDictionary => reader(d)
-  case other => Left(s"BDictionary is expected, ${other.getClass.getSimpleName} found")
-}
+  extension on [A, B](leftReader: Reader[Bencode.BDictionary, A]):
+    def zip(rightReader: Reader[Bencode.BDictionary, B]): Reader[Bencode.BDictionary, (A, B)] =
+      bencode =>
+        for
+          a <- leftReader(bencode)
+          b <- rightReader(bencode)
+        yield
+          (a, b)
 
-given Reader[Bencode, Long] = {
-  case Bencode.BInteger(value) => Right(value)
-  case other => Left(s"BInteger is expected, ${other.getClass.getSimpleName} found")
-}
+  extension on [I, R](reader: Reader[I, R]):
+    def attempt: Reader[I, Either[String, R]] = i => Right(reader(i))
 
-given Reader[Bencode, String] = {
-  case Bencode.BString(bytes) => bytes.decodeUtf8.left.map(_.getMessage)
-  case other => Left(s"BString is expected, ${other.getClass.getSimpleName} found")
-}
+  def dictionary[A](reader: Reader[Bencode.BDictionary, A]): Reader[Bencode, A] = {
+    case d: Bencode.BDictionary => reader(d)
+    case other => Left(s"BDictionary is expected, ${other.getClass.getSimpleName} found")
+  }
 
-given [R](using Reader[Bencode, R]) as Reader[Bencode, List[R]] = {
-  case Bencode.BList(values) =>
-    val buffer = scala.collection.mutable.ArrayBuffer.empty[R]
-    var error: String | Null = null
-    def recur(values: List[Bencode]): Unit =
-      if values.nonEmpty
-        readerOf[R](values.head) match
-          case Right(r) =>
-            buffer.append(r)
-            recur(values.tail)
-          case Left(e) =>
-            error = e
-    recur(values)
-    if error == null then Right(buffer.toList) else Left(error)
-  case other => Left(s"BList is expected, ${other.getClass.getSimpleName} found")
-}
+  given Reader[Bencode, Long] = {
+    case Bencode.BInteger(value) => Right(value)
+    case other => Left(s"BInteger is expected, ${other.getClass.getSimpleName} found")
+  }
 
-extension on (fieldName: String) {
-  def as[R](using reader: Reader[Bencode, R]): Reader[Bencode.BDictionary, R] =
+  given Reader[Bencode, String] = {
+    case Bencode.BString(bytes) => bytes.decodeUtf8.left.map(_.getMessage)
+    case other => Left(s"BString is expected, ${other.getClass.getSimpleName} found")
+  }
+
+  given [R](using Reader[Bencode, R]) as Reader[Bencode, List[R]] = {
+    case Bencode.BList(values) =>
+      val buffer = scala.collection.mutable.ArrayBuffer.empty[R]
+      var error: String | Null = null
+      def recur(values: List[Bencode]): Unit =
+        if values.nonEmpty
+          readerOf[R](values.head) match
+            case Right(r) =>
+              buffer.append(r)
+              recur(values.tail)
+            case Left(e) =>
+              error = e
+      recur(values)
+      if error == null then Right(buffer.toList) else Left(error)
+    case other => Left(s"BList is expected, ${other.getClass.getSimpleName} found")
+  }
+
+end Reader
+
+extension syntax:
+  def [R](fieldName: String).read(using reader: Reader[Bencode, R]): Reader[Bencode.BDictionary, R] =
     _.values.get(fieldName) match
       case Some(value) => reader(value)
       case None => Left(s"Field '$fieldName' is not present in dictionary")
-}

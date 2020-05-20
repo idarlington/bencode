@@ -11,7 +11,9 @@ enum Bencode:
 object Bencode:
   
   object BString:
-    def fromString(string: String): BString =
+    def fromString(string: String): Either[String, BString] =
+      ByteVector.encodeUtf8(string).left.map(_.toString).map(new Bencode.BString(_))
+    def fromStringUnsafe(string: String): BString =
       new BString(ByteVector.encodeUtf8(string).getOrElse(???))
     val Empty = new BString(ByteVector.empty)
 

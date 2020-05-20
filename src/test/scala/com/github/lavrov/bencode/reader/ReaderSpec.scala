@@ -23,10 +23,10 @@ class ReaderSpec extends munit.FunSuite:
 
   test("read dictionary") {
     val reader =
-      dictionary(
+      Reader.dictionary(
         for
-          a <- "a".as[Long]
-          b <- "b".as[Long]
+          a <- "a".read[Long]
+          b <- "b".read[Long]
         yield
           (a, b)
       )
