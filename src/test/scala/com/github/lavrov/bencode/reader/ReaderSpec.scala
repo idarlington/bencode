@@ -21,6 +21,14 @@ class ReaderSpec extends munit.FunSuite:
     assertEquals(result, expected)
   }
 
+  test("read dictionary implicitly") {
+    val reader = readerOf[Map[String, Long]]
+    val input = Bencode.BDictionary(("first", Bencode.BInteger(1L)))
+    val result = reader(input)
+    val expected = Right(Map("first" -> 1L))
+    assertEquals(result, expected)
+  }
+
   test("read dictionary") {
     val reader =
       Reader.dictionary(
