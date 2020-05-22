@@ -40,6 +40,39 @@ object Reader:
     case other => Left(s"BString is expected, ${other.getClass.getSimpleName} found")
   }
 
+  given Reader[Bencode, ByteVecor] = {
+    case Bencode.BString(vector) =>  
+      Right(vector)
+    case other => Left(s"String is expected, ${other.getClass.getSimpleName} found")
+  }
+
+  given [R](using Reader[Bencode, R]) as Reader[Bencode, Map[String, R]] = {
+    case Bencode.BDictionary(values) =>  {
+      def formatMap(entries: List[(String, Bencode)], end: Map[String,R]): Map[String,R] | String = {
+        entries match { 
+          case (key,value) :: tail => 
+            readerOf[R](value) match {
+              case Right(result) => 
+                formatMap(tail, end + (key -> result))
+              case Left(e) => 
+                e      
+            }
+          case Nil => 
+            end
+        }
+      }
+
+      formatMap(values.toList, Map.empty[String, R]) match {
+        case value: Map[String,R] => 
+          Right(value)
+        case error: String => 
+          Left(error)
+      }
+    }
+    
+    case other => Left(s"BDictionary is expected, ${other.getClass.getSimpleName} found") 
+  }
+
   given [R](using Reader[Bencode, R]) as Reader[Bencode, List[R]] = {
     case Bencode.BList(values) =>
       val buffer = scala.collection.mutable.ArrayBuffer.empty[R]
